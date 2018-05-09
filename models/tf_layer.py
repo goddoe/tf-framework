@@ -4,11 +4,13 @@ from functools import reduce
 from operator import mul
 
 import tensorflow as tf
-from tensorflow.python.ops import control_flow_ops
 import numpy as np
 
 
-def build_layer_with_info_dict_list(X, info_dict_list, is_training, reg_lambda):
+def build_layer_with_info_dict_list(X,
+                                    info_dict_list,
+                                    is_training,
+                                    reg_lambda):
     current_input = X
     res_dict = {}
     for layer_i, info in enumerate(info_dict_list):

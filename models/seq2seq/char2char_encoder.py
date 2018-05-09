@@ -284,7 +284,7 @@ class Char2CharEncoder(BaseTfClassifier):
                 else:
                     losses = self.g.get_collection(
                         tf.GraphKeys.REGULARIZATION_LOSSES)
-        
+
                 if losses:
                     l2_regularizer = tf.add_n(losses)
 
@@ -370,7 +370,6 @@ class Char2CharEncoder(BaseTfClassifier):
 
         loss /= total_num
         return loss, total_num
-
 
     def encode(self, X, X_length=None, batch_size=32):
         if X_length is None:
@@ -594,14 +593,14 @@ class Char2CharEncoder(BaseTfClassifier):
 
             (train_loss,
              _) = self.evaluate_with_da(X,
-                                                X_length,
-                                                Y,
-                                                init_dataset_train)
+                                        X_length,
+                                        Y,
+                                        init_dataset_train)
             (valid_loss,
              _) = self.evaluate_with_da(X,
-                                                X_length,
-                                                Y,
-                                                init_dataset_valid)
+                                        X_length,
+                                        Y,
+                                        init_dataset_valid)
 
             self.report_dict['train_loss'].append(train_loss)
             self.report_dict['valid_loss'].append(valid_loss)
@@ -639,17 +638,16 @@ class Char2CharEncoder(BaseTfClassifier):
 
         self.load(self.best_ckpt_path)
 
-
         (train_loss,
          _) = self.evaluate_with_da(X,
-                                            X_length,
-                                            Y,
-                                            init_dataset_train)
+                                    X_length,
+                                    Y,
+                                    init_dataset_train)
         (valid_loss,
          _) = self.evaluate_with_da(X,
-                                            X_length,
-                                            Y,
-                                            init_dataset_valid)
+                                    X_length,
+                                    Y,
+                                    init_dataset_valid)
 
         pred = self.sess.run(self.decoder_prediction,
                              feed_dict={self.X: sample_x[:10],
@@ -679,7 +677,6 @@ class Char2CharEncoder(BaseTfClassifier):
 
         return self
 
-    
     def save_with_saved_model(self, path):
         """Description
 

@@ -1,5 +1,5 @@
-import inspect
 from sklearn.base import BaseEstimator, ClassifierMixin
+
 
 def check_clf(instance):
     flag = False
@@ -7,6 +7,7 @@ def check_clf(instance):
         if instance.clf is not None:
             flag = True
     return flag
+
 
 class BaseTfScikitClassifier(BaseEstimator, ClassifierMixin):
 
@@ -21,7 +22,7 @@ class BaseTfScikitClassifier(BaseEstimator, ClassifierMixin):
             self.init_clf()
 
     def predict(self, X, y=None, batch_size=64):
-        return self.clf.predict(x, batch_size)
+        return self.clf.predict(X, batch_size)
 
     def evaluate(self, X, y=None, batch_size=64):
         """
@@ -37,9 +38,8 @@ class BaseTfScikitClassifier(BaseEstimator, ClassifierMixin):
         if not check_clf(self):
             print("init_clf()")
             self.init_clf()
-                
         self.clf.load(path)
 
-    def save(self, path): 
-        self.clf.save(path) 
+    def save(self, path):
+        self.clf.save(path)
 

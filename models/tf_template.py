@@ -6,12 +6,14 @@ from types import MethodType
 import tensorflow as tf
 import numpy as np
 
-from libs.various_utils import generate_id_with_date, get_date_time_prefix
+from libs.various_utils import (generate_id_with_date,
+                                get_date_time_prefix)
+
 
 class BaseTfClassifier(object):
     def __init__(self, **kwargs):
         """
-        Implement things below 
+        Implement things below
         """
         self.input_dim = None
         self.output_dim = None
@@ -44,7 +46,7 @@ class BaseTfClassifier(object):
 
     def build_model(self):
         """
-        Implement things below 
+        Implement things below
         """
         self.X = None
         self.Y = None
@@ -57,7 +59,6 @@ class BaseTfClassifier(object):
         self.is_training = None
         self.cost = None
         self.optimizer = None
-
 
     def load(self, path, flag_import_graph=False, model=None):
         meta_path = "{}.meta".format(path)
@@ -77,35 +78,34 @@ class BaseTfClassifier(object):
 
         with open(meta_path, "rb") as f:
             self.meta = pickle.load(f)
-            
-        for key,val in self.meta.items():
+
+        for key, val in self.meta.items():
             setattr(self, key, val)
 
         if model:
             func_tuple_list = inspect.getmembers(model, predicate=inspect.isfunction)
             for func_name, func in func_tuple_list:
-                setattr(self, func_name, MethodType(func, self)) 
+                setattr(self, func_name, MethodType(func, self))
 
-
-    def save(self, 
-                path,
-                global_step=None, 
-                meta_graph_suffix='graph',
-                latest_filename=None, 
-                write_meta_graph=True,
-                write_state=True):
+    def save(self,
+             path,
+             global_step=None,
+             meta_graph_suffix='graph',
+             latest_filename=None,
+             write_meta_graph=True,
+             write_state=True):
 
         meta_path = "{}.meta".format(path)
         with open(meta_path, "wb") as f:
             pickle.dump(self.meta, f)
 
-        return self.saver.save(self.sess, 
-                        path, 
-                        global_step=global_step,
-                        latest_filename=latest_filename,
-                        meta_graph_suffix=meta_graph_suffix,
-                        write_meta_graph=write_meta_graph, 
-                        write_state=True)
+        return self.saver.save(self.sess,
+                               path,
+                               global_step=global_step,
+                               latest_filename=latest_filename,
+                               meta_graph_suffix=meta_graph_suffix,
+                               write_meta_graph=write_meta_graph,
+                               write_state=True)
 
     def predict(self, X_target, batch_size=32):
         Y_pred_list = []
@@ -119,9 +119,9 @@ class BaseTfClassifier(object):
         for batch_i in range(n_batch):
             batch_x = X_target[batch_i *
                                batch_size: (batch_i + 1) * batch_size]
-            batch_Y_pred = self.sess.run(self.Y_pred, 
-                                    feed_dict={self.X: batch_x, 
-                                                self.is_training: False})
+            batch_Y_pred = self.sess.run(self.Y_pred,
+                                         feed_dict={self.X: batch_x,
+                                                    self.is_training: False})
 
             Y_pred_list.append(batch_Y_pred)
         Y_pred = np.concatenate(Y_pred_list, axis=0)
@@ -145,7 +145,7 @@ class BaseTfClassifier(object):
                                batch_size: (batch_i + 1) * batch_size]
 
             batch_Y_pred, batch_accuracy, batch_loss = self.sess.run([self.Y_pred, self.accuracy, self.cost],
-                                                                     feed_dict={self.X: batch_x, 
+                                                                     feed_dict={self.X: batch_x,
                                                                                 self.Y: batch_y,
                                                                                 self.is_training: False})
             accuracy += len(batch_x) * batch_accuracy
@@ -169,10 +169,22 @@ class BaseTfClassifier(object):
     def prepare_preprocess(self, X_target):
         self.mean, self.std = self.calc_moments_of_data(X_target)
 
-    def train(self, X_train, Y_train, X_valid, Y_valid, batch_size, n_epoch, learning_rate, reg_lambda=0., patience=100, verbose_interval=20, save_dir_path=None, **kwargs):
+    def train(self,
+              X_train,
+              Y_train,
+              X_valid,
+              Y_valid,
+              batch_size,
+              n_epoch,
+              learning_rate,
+              reg_lambda=0.,
+              patience=100,
+              verbose_interval=20,
+              save_dir_path=None,
+              **kwargs):
 
         try:
-            if self.save_dir_path  is None and save_dir_path is None:
+            if self.save_dir_path is None and save_dir_path is None:
                 self.save_dir_path = "./tmp/{}".format(generate_id_with_date())
 
             if save_dir_path:
@@ -205,13 +217,13 @@ class BaseTfClassifier(object):
                                          batch_size: (batch_i + 1) * batch_size]
                 batch_x = X_train[rand_idx]
                 batch_y = Y_train[rand_idx]
-                
+
                 self.sess.run(self.updates,
-                                  feed_dict={self.X: batch_x,
-                                             self.Y: batch_y,
-                                             self.learning_rate: learning_rate,
-                                             self.reg_lambda: reg_lambda,
-                                             self.is_training: True})
+                              feed_dict={self.X: batch_x,
+                                         self.Y: batch_y,
+                                         self.learning_rate: learning_rate,
+                                         self.reg_lambda: reg_lambda,
+                                         self.is_training: True})
 
             _, valid_accuracy, valid_loss = self.evaluate(
                 X_valid, Y_valid, batch_size)
@@ -223,7 +235,6 @@ class BaseTfClassifier(object):
             self.report_dict['valid_accuracy'].append(valid_accuracy)
             self.report_dict['train_accuracy'].append(train_accuracy)
 
-            
             if verbose_interval:
                 if epoch_i % verbose_interval == 0:
                     print("-" * 30)
@@ -242,13 +253,13 @@ class BaseTfClassifier(object):
                 self.best_accuracy = valid_accuracy
 
                 meta = {
-                            'input_dim':self.input_dim,
-                            'output_dim':self.output_dim,
-                            'min_loss':self.min_loss,
-                            'best_accuracy':self.best_accuracy,
-                            'mean':self.mean,
-                            'std':self.std,
-                            'flag_preprocess':self.flag_preprocess,
+                            'input_dim': self.input_dim,
+                            'output_dim': self.output_dim,
+                            'min_loss': self.min_loss,
+                            'best_accuracy': self.best_accuracy,
+                            'mean': self.mean,
+                            'std': self.std,
+                            'flag_preprocess': self.flag_preprocess,
                         }
                 self.meta.update(meta)
                 self.save_path = "{}/{}".format(self.save_dir_path, self.model_name)
@@ -269,12 +280,17 @@ class BaseTfClassifier(object):
                 break
 
         self.load(self.best_ckpt_path)
-        _, valid_accuracy, valid_loss = self.evaluate(X_valid, Y_valid, batch_size)
-        _, train_accuracy, train_loss = self.evaluate(X_train_org, Y_train, batch_size)
+        (_,
+         valid_accuracy,
+         valid_loss) = self.evaluate(X_valid, Y_valid, batch_size)
+        (_,
+         train_accuracy,
+         train_loss) = self.evaluate(X_train_org, Y_train, batch_size)
         self.meta['report_dict'] = self.report_dict
 
         date_time_prefix = get_date_time_prefix()
-        self.final_model_path = "{}/{}_final_{}".format(self.save_dir_path, date_time_prefix, self.model_name) 
+        self.final_model_path = "{}/{}_final_{}".format(
+            self.save_dir_path, date_time_prefix, self.model_name)
         self.save(self.final_model_path)
         print("*"*30)
         print("final trained performance")
