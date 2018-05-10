@@ -103,8 +103,8 @@ class EnsembleNN(BaseTfClassifier):
             
         if lstm_info_dict is None:
             lstm_info_dict = {
-                        'timesteps': 16,
-                        'hidden_num': 256,
+                        'timesteps': 10,
+                        'hidden_num': 128,
                     }
 
         if mlp_layer_info_dict_list is None:
@@ -113,8 +113,8 @@ class EnsembleNN(BaseTfClassifier):
                         'type': 'fc',
                         "n_output": 1024,
                         "is_batch_norm": True,
-                        "is_dropout":True,
-                        "keep_prob":0.8,
+                        "is_dropout": True,
+                        "keep_prob": 0.8,
                         "activation": tf.nn.relu,
                         "batch_norm_decay": 0.99,
                         "name": "mlp_1",
@@ -123,8 +123,8 @@ class EnsembleNN(BaseTfClassifier):
                         'type': 'fc',
                         "n_output": 1024,
                         "is_batch_norm": True,
-                        "is_dropout":True,
-                        "keep_prob":0.8,
+                        "is_dropout": True,
+                        "keep_prob": 0.8,
                         "activation": tf.nn.relu,
                         "batch_norm_decay": 0.99,
                         "name": "mlp_2",

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import tensorflow as tf
-import numpy as np
 
 from models.tf_template import BaseTfClassifier
-from models.tf_layer import batch_norm_wrapper, flatten, linear, conv1d, bn_bilstm, bilstm, build_layer_with_info_dict_list
+from models.tf_layer import (bilstm,
+                             build_layer_with_info_dict_list)
 
 
 class LSTM(BaseTfClassifier):
-    def __init__(self, input_dim, output_dim,       
+    def __init__(self, input_dim, output_dim,
                  lstm_info_dict=None,
                  fc_layer_info_dict_list=None,
                  output_layer_info_dict=None,
@@ -24,7 +24,7 @@ class LSTM(BaseTfClassifier):
 
         if lstm_info_dict is None:
             lstm_info_dict = {
-                        'timesteps': 250,
+                        'timesteps': 28,
                         'hidden_num': 128,
                     }
 
@@ -42,8 +42,7 @@ class LSTM(BaseTfClassifier):
             optimizer = tf.train.AdamOptimizer
 
         if cost_function is None:
-            cost_function=lambda Y_pred, Y: -tf.reduce_mean(Y * tf.log(Y_pred + 1e-12))
-
+            cost_function = lambda Y_pred, Y: -tf.reduce_mean(Y * tf.log(Y_pred + 1e-12))
 
         self.mean = None
         self.std = None
@@ -58,7 +57,6 @@ class LSTM(BaseTfClassifier):
 
         self.optimizer = optimizer
         self.cost_function = cost_function
-        
         self.flag_preprocess = flag_preprocess
         self.tensorboard_path = tensorboard_path
 
@@ -91,7 +89,7 @@ class LSTM(BaseTfClassifier):
 
             timesteps = self.lstm_info_dict['timesteps']
             hidden_num = self.lstm_info_dict['hidden_num']
-            X_reshaped = tf.reshape(X, (-1, timesteps,int(self.input_dim/timesteps ) ))
+            X_reshaped = tf.reshape(X, (-1, timesteps, int(self.input_dim/timesteps)))
 
             outputs, _, _ = bilstm(X_reshaped, timesteps, hidden_num)
             h = outputs[-1]
@@ -99,15 +97,19 @@ class LSTM(BaseTfClassifier):
             print(outputs)
             print("*"*30)
             print("h")
-            
             print(h.get_shape().as_list())
-        
+
         with tf.variable_scope("fc"):
-
             if self.fc_layer_info_dict_list is not None:
-                h = build_layer_with_info_dict_list(h, self.fc_layer_info_dict_list, is_training, reg_lambda)
+                h = build_layer_with_info_dict_list(h,
+                                                    self.fc_layer_info_dict_list,
+                                                    is_training,
+                                                    reg_lambda)
 
-            h = build_layer_with_info_dict_list(h, [self.output_layer_info_dict], is_training, reg_lambda)
+            h = build_layer_with_info_dict_list(h,
+                                                [self.output_layer_info_dict],
+                                                is_training,
+                                                reg_lambda)
 
             logits = h
             Y_pred = tf.nn.softmax(logits)
